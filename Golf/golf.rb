@@ -5,6 +5,7 @@ set title: "Golf", width: 1920, height: 1080
 $v = 0
 $angle = 0
 $count = 0
+$arrows = []
 
 $song = Music.new('music.mp3')
 $song.play
@@ -209,31 +210,45 @@ end
 
 on :mouse_up do |event|
   if event.button == :left
-    delta_x = $ball.x - Window.mouse_x
-    delta_y = $ball.y - Window.mouse_y
-    $angle = Math.atan2(delta_y, delta_x)
+    $delta_x = $ball.x - Window.mouse_x
+    $delta_y = $ball.y - Window.mouse_y
+    $angle = Math.atan2($delta_y, $delta_x)
 
-    v_square = (delta_x ** 2) + (delta_y ** 2)
+    v_square = ($delta_x ** 2) + ($delta_y ** 2)
     $v += Math.sqrt(v_square) * 0.05
+
+    $arrow = Line.new(
+      x1: $ball.x,
+      y1: $ball.y,
+      x2: $ball.x + $delta_x,
+      y2: $ball.y + $delta_y,
+      width: 10,
+      color: "black",
+      z: 2
+    )
+
+    $arrows << $arrow
   end
 end 
 
 on :mouse_down do |event|
-  if event.button == :left
+    $arrows.each(&:remove)
+    $arrows.clear 
+
     close if $exit.contains? Window.mouse_x, Window.mouse_y
 
     if $continue.contains? Window.mouse_x, Window.mouse_y
       $game_over.remove
       $continue.remove
     end
-  end
 end
 
 update do
   move()
 
   if hit()
-    $v *= -0.5
+    $angle += Math::PI
+    $v *= 0.5
   end
   
   if hole_hit()
